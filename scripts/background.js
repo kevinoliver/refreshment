@@ -18,15 +18,18 @@ chrome.action.onClicked.addListener(async (tab) => {
   });
 
   if (nextState === 'on') {
+    console.log("Turning on refresh for tab " + tab.id)
     chrome.alarms.create({
       name: tab.id,
       alarmInfo: { periodInMinutes: 5 },
       callback: () => {
         // todo: refresh the tab
+        console.log("Refreshing tab " + tab.id)
       }
     });
   } else {
     // turn off existing timer
+    console.log("Turning off refresh for tab " + tab.id)
     chrome.alarms.clear({
       name: tab.id
     });
