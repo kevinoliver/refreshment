@@ -11,11 +11,20 @@ function alarmNameForTabId(tabId) {
   return ALARM_NAME_PREFIX + tabId
 }
 
-function removeAlarm(tabId) {
-  // todo: this should keep the icon state up-to-date as well
+async function removeAlarm(tabId) {
   return chrome.alarms.clear(
     alarmNameForTabId(tabId)
+  ).then(
+    updateIcon(tabId, false)
   )
+}
+
+async function createAlarm(tabId) {
+  chrome.alarms.create(
+    alarmNameForTabId(tabId),
+    { periodInMinutes: 0.1 }, // todo: set to 5 minutes
+  )
+  return updateIcon(tabId, true)
 }
 
 /**
@@ -41,14 +50,9 @@ chrome.action.onClicked.addListener(async (tab) => {
   const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
   const isRefreshing = prevState === BADGE_STATE_OFF
   
-  updateIcon(tab.id, isRefreshing)
-
   console.debug("onClicked for tabId=" + tab.id + ", isRefreshing=" +  isRefreshing)
   if (isRefreshing) {
-    chrome.alarms.create(
-      alarmNameForTabId(tab.id),
-      { periodInMinutes: 0.1 }, // todo: set to 5 minutes
-    );
+    createAlarm(tab.id)
   } else {
     removeAlarm(tab.id)
   }
