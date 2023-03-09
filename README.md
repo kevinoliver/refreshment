@@ -19,3 +19,7 @@ I am aware there are Chrome extensions out there that do this sort of thing. Unf
 ones I saw required more permissions than I felt comfortable with, especially given that I couldn't
 see the source code. So it became an excuse to learn a bit about Chrome extensions and write something
 that you could quickly audit yourself to be sure it doesn't do anything sketchy.
+
+## Attribution
+
+The [Repeat icon](https://icons8.com/icon/82734/repeat) is by [Icons8](https://icons8.com).
