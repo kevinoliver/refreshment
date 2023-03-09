@@ -1,5 +1,6 @@
 'use strict';
 
+const REFRESH_PERIOD_MINUTES = 0.1 // todo: set to 5
 const ALARM_NAME_PREFIX = "refresh_tab_id_"
 const BADGE_STATE_ON = "on"
 const BADGE_STATE_OFF = ""
@@ -38,7 +39,7 @@ async function removeAlarm(tabId) {
 async function createAlarm(tabId) {
   chrome.alarms.create(
     alarmNameForTabId(tabId),
-    { periodInMinutes: 0.1 }, // todo: set to 5 minutes
+    { periodInMinutes: REFRESH_PERIOD_MINUTES },
   )
   return updateIcon(tabId, true)
 }
@@ -55,14 +56,14 @@ async function updateIcon(tabId, isRefreshing) {
     await chrome.action.setTitle({
       tabId: tabId,
       title: isRefreshing 
-        ? "Refreshing every 5 minutes. Click to stop refreshing."
-        : "Click to refresh this tab every 5 minutes." 
+        ? `Refreshing this tab every ${REFRESH_PERIOD_MINUTES} minutes. Click to stop refreshing`
+        : `Click to refresh this tab every ${REFRESH_PERIOD_MINUTES} minutes.` 
     })
   } catch (error) {
     // These calls can fail if the tab no longer exists. The alarm is not
     // removed here as this function will be called when a tab is closed and
     // that would trigger an infinite loop.
-    console.debug("updateIcon failed for tabId=" + tabId + " " + error)
+    console.debug(`updateIcon failed for tabId=${tabId} ${error}`)
   }
 }
 
@@ -72,7 +73,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
   const isRefreshing = prevState === BADGE_STATE_OFF
   
-  console.debug("onClicked for tabId=" + tab.id + ", isRefreshing=" +  isRefreshing)
+  console.debug(`onClicked for tabId=${tab.id}, isRefreshing=${isRefreshing}, periodInMinutes=${REFRESH_PERIOD_MINUTES}`)
   if (isRefreshing) {
     createAlarm(tab.id)
   } else {
@@ -86,12 +87,12 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (tabId === undefined) {
     return
   }
-  console.debug("Reloading tabId=" + tabId)
+  console.debug(`Reloading tabId=${tabId}`)
   try {
     await chrome.tabs.get(tabId)
     await chrome.tabs.reload(tabId)
   } catch (error) {
-    console.debug("Reload failed for tabId=" + tabId + " " + error)
+    console.debug(`Reload failed for tabId=${tabId} ${error}`)
     removeAlarm(tabId)
   }
 });
