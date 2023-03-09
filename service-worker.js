@@ -5,10 +5,26 @@ const BADGE_STATE_ON = "on"
 const BADGE_STATE_OFF = ""
 
 /**
- * Alarms are named using the format: `$ALARM_NAME_PREFIX$tabId`
+ * Alarms are encoded using the format: `$ALARM_NAME_PREFIX$tabId`.
+ *
+ * See `tabIdFromAlarmName` for decoding.
  */
 function alarmNameForTabId(tabId) {
   return ALARM_NAME_PREFIX + tabId
+}
+
+/**
+ * Returns the tabId as a number from the given alarm name.
+ * If the alarm name is not a valid encoding, returns undefined.
+ *
+ * See `alarmNameForTabId` for encoding a tabId into an alarm name.
+ */
+function tabIdFromAlarmName(alarmName) {
+  if (!alarmName.startsWith(ALARM_NAME_PREFIX)) {
+    return undefined
+  }
+  const stripped = alarmName.slice(ALARM_NAME_PREFIX.length)
+  return Number(stripped)
 }
 
 async function removeAlarm(tabId) {
@@ -31,17 +47,23 @@ async function createAlarm(tabId) {
  * Updates the extension's icon to reflect the current state.
  */
 async function updateIcon(tabId, isRefreshing) {
-  return chrome.action.setBadgeText({
-    tabId: tabId,
-    text: isRefreshing ? BADGE_STATE_ON : BADGE_STATE_OFF
-  }).then(
-    chrome.action.setTitle({
+  try {
+    await chrome.action.setBadgeText({
+      tabId: tabId,
+      text: isRefreshing ? BADGE_STATE_ON : BADGE_STATE_OFF
+    })
+    await chrome.action.setTitle({
       tabId: tabId,
       title: isRefreshing 
         ? "Refreshing every 5 minutes. Click to stop refreshing."
         : "Click to refresh this tab every 5 minutes." 
     })
-  );
+  } catch (error) {
+    // These calls can fail if the tab no longer exists. The alarm is not
+    // removed here as this function will be called when a tab is closed and
+    // that would trigger an infinite loop.
+    console.debug("updateIcon failed for tabId=" + tabId + " " + error)
+  }
 }
 
 // Handles turning on/off the refreshing
@@ -60,12 +82,10 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 // Does the refreshing when the alarms fire
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (!alarm.name.startsWith(ALARM_NAME_PREFIX)) {
+  const tabId = tabIdFromAlarmName(alarm.name)
+  if (tabId === undefined) {
     return
   }
-  const stripped = alarm.name.slice(ALARM_NAME_PREFIX.length)
-  const tabId = Number(stripped)
-
   console.debug("Reloading tabId=" + tabId)
   try {
     await chrome.tabs.get(tabId)
