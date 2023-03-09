@@ -5,6 +5,10 @@ const REFRESH_PREFIX = "refresh_tab_id_"
 chrome.runtime.onInstalled.addListener(() => {
   // todo: this isn't working right. 
   // it shows as off after the page reloads
+  // not sure where it gets from after the reload as this does not fire again
+  // and the other place we set badge text is in an event handler for onClicked.
+  // looks like this is set globally and when the page refreshes this is lost.
+  console.log("runtime installed. setting badge text to 'off'")
   chrome.action.setBadgeText({
     text: "off",
   });
