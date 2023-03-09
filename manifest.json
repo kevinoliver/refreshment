@@ -13,5 +13,11 @@
     "activeTab", 
     "scripting",
     "alarms"
-  ]
+  ],
+  "icons": {
+    "16": "images/icons8-repeat-48.png",
+    "32": "images/icons8-repeat-48.png",
+    "48": "images/icons8-repeat-48.png",
+    "128": "images/icons8-repeat-96.png"
+  }
 }
