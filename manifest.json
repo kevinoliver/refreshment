@@ -7,7 +7,7 @@
     "default_title": "refreshment!"
   },
   "background": {
-    "service_worker": "scripts/background.js"
+    "service_worker": "service-worker.js"
   },
   "permissions": [
     "activeTab", 
