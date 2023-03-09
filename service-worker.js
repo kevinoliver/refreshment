@@ -11,6 +11,13 @@ function alarmNameForTabId(tabId) {
   return ALARM_NAME_PREFIX + tabId
 }
 
+function removeAlarm(tabId) {
+  // todo: this should keep the icon state up-to-date as well
+  return chrome.alarms.clear(
+    alarmNameForTabId(tabId)
+  )
+}
+
 /**
  * Updates the extension's icon to reflect the current state.
  */
@@ -36,26 +43,33 @@ chrome.action.onClicked.addListener(async (tab) => {
   
   updateIcon(tab.id, isRefreshing)
 
+  console.debug("onClicked for tabId=" + tab.id + ", isRefreshing=" +  isRefreshing)
   if (isRefreshing) {
     chrome.alarms.create(
       alarmNameForTabId(tab.id),
-      { periodInMinutes: 5 },
+      { periodInMinutes: 0.1 }, // todo: set to 5 minutes
     );
   } else {
-    chrome.alarms.clear(
-      alarmNameForTabId(tab.id)
-    );
+    removeAlarm(tab.id)
   }
 });
 
 // Does the refreshing when the alarms fire
-chrome.alarms.onAlarm.addListener((alarm) => {
+chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (!alarm.name.startsWith(ALARM_NAME_PREFIX)) {
     return
   }
   const stripped = alarm.name.slice(ALARM_NAME_PREFIX.length)
-  const tabId = Number(stripped) 
-  chrome.tabs.reload(tabId)
+  const tabId = Number(stripped)
+
+  console.debug("Reloading tabId=" + tabId)
+  try {
+    await chrome.tabs.get(tabId)
+    await chrome.tabs.reload(tabId)
+  } catch (error) {
+    console.debug("Reload failed for tabId=" + tabId + " " + error)
+    removeAlarm(tabId)
+  }
 });
 
 // Keeps the extension's badge state up-to-date
@@ -63,5 +77,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _tab) => {
   if (changeInfo.status == 'complete') {
     const alarm = await chrome.alarms.get(alarmNameForTabId(tabId))
     updateIcon(tabId, alarm !== undefined)
+  }
+});
+
+// Remove any alarms when a tab is closed
+chrome.tabs.onRemoved.addListener(async (tabId, _removeInfo) => {
+  const alarm = await chrome.alarms.get(alarmNameForTabId(tabId))
+  if (alarm !== undefined) {
+    removeAlarm(tabId)
   }
 });
