@@ -14,10 +14,6 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-function refreshment() {
-  location.reload()
-}
-
 chrome.action.onClicked.addListener(async (tab) => {
   // Retrieve the action badge to check the current statge of the extension
   const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
@@ -47,8 +43,5 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
   const stripped = alarm.name.slice(REFRESH_PREFIX.length)
   const tabId = Number(stripped) 
-  chrome.scripting.executeScript({
-    target: { tabId : tabId },
-    func: refreshment,
-  });
+  chrome.tabs.reload(tabId)
 });
