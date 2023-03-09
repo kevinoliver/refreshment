@@ -11,11 +11,21 @@ function alarmNameForTabId(tabId) {
   return ALARM_NAME_PREFIX + tabId
 }
 
-async function setBadgeText(tabId, isRefreshing) {
+/**
+ * Updates the extension's icon to reflect the current state.
+ */
+async function updateIcon(tabId, isRefreshing) {
   return chrome.action.setBadgeText({
     tabId: tabId,
     text: isRefreshing ? BADGE_STATE_ON : BADGE_STATE_OFF
-  });
+  }).then(
+    chrome.action.setTitle({
+      tabId: tabId,
+      title: isRefreshing 
+        ? "Refreshing every 5 minutes. Click to stop refreshing."
+        : "Click to refresh this tab every 5 minutes." 
+    })
+  );
 }
 
 // Handles turning on/off the refreshing
@@ -24,7 +34,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
   const isRefreshing = prevState === BADGE_STATE_OFF
   
-  setBadgeText(tab.id, isRefreshing)
+  updateIcon(tab.id, isRefreshing)
 
   if (isRefreshing) {
     chrome.alarms.create(
@@ -52,6 +62,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _tab) => {
   if (changeInfo.status == 'complete') {
     const alarm = await chrome.alarms.get(alarmNameForTabId(tabId))
-    setBadgeText(tabId, alarm !== undefined)
+    updateIcon(tabId, alarm !== undefined)
   }
 });

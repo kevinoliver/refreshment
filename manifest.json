@@ -2,9 +2,9 @@
   "name": "refreshment",
   "version": "0.1.0",
   "manifest_version": 3,
-  "description": "Automatically refresh tabs on a schedule",
+  "description": "Automatically refresh tabs",
   "action": {
-    "default_title": "refreshment!"
+    "default_title": "Click to refresh this tab every 5 minutes."
   },
   "background": {
     "service_worker": "service-worker.js"
