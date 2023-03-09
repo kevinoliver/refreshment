@@ -1,15 +1,20 @@
 'use strict';
 
-const REFRESH_PREFIX = "refresh_tab_id_"
+const ALARM_NAME_PREFIX = "refresh_tab_id_"
+const BADGE_STATE_ON = "on"
+const BADGE_STATE_OFF = ""
 
+/**
+ * Alarms are named using the format: `$ALARM_NAME_PREFIX$tabId`
+ */
 function alarmNameForTabId(tabId) {
-  return REFRESH_PREFIX + tabId
+  return ALARM_NAME_PREFIX + tabId
 }
 
 async function setBadgeText(tabId, isRefreshing) {
   return chrome.action.setBadgeText({
     tabId: tabId,
-    text: isRefreshing ? "on" : ""
+    text: isRefreshing ? BADGE_STATE_ON : BADGE_STATE_OFF
   });
 }
 
@@ -17,7 +22,7 @@ async function setBadgeText(tabId, isRefreshing) {
 chrome.action.onClicked.addListener(async (tab) => {
   // Retrieve the action badge to check the current state of the extension
   const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
-  const isRefreshing = prevState === ""
+  const isRefreshing = prevState === BADGE_STATE_OFF
   
   setBadgeText(tab.id, isRefreshing)
 
@@ -35,16 +40,16 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 // Does the refreshing when the alarms fire
 chrome.alarms.onAlarm.addListener((alarm) => {
-  if (!alarm.name.startsWith(REFRESH_PREFIX)) {
+  if (!alarm.name.startsWith(ALARM_NAME_PREFIX)) {
     return
   }
-  const stripped = alarm.name.slice(REFRESH_PREFIX.length)
+  const stripped = alarm.name.slice(ALARM_NAME_PREFIX.length)
   const tabId = Number(stripped) 
   chrome.tabs.reload(tabId)
 });
 
-// Keep the extension's badge state up-to-date
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+// Keeps the extension's badge state up-to-date
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _tab) => {
   if (changeInfo.status == 'complete') {
     const alarm = await chrome.alarms.get(alarmNameForTabId(tabId))
     setBadgeText(tabId, alarm !== undefined)
