@@ -3,6 +3,8 @@
 const REFRESH_PREFIX = "refresh_tab_id_"
 
 chrome.runtime.onInstalled.addListener(() => {
+  // todo: this isn't working right. 
+  // it shows as off after the page reloads
   chrome.action.setBadgeText({
     text: "off",
   });
@@ -24,14 +26,11 @@ chrome.action.onClicked.addListener(async (tab) => {
   });
 
   if (nextState === 'on') {
-    console.log("Turning on refresh for tab " + tab.id)
     chrome.alarms.create(
       REFRESH_PREFIX + tab.id,
       { periodInMinutes: 1 }, // todo: set this to 5 
     );
   } else {
-    // turn off existing timer
-    console.log("Turning off refresh for tab " + tab.id)
     chrome.alarms.clear(
       REFRESH_PREFIX + tab.id
     );
