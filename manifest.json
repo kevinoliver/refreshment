@@ -1,0 +1,17 @@
+{
+  "name": "refreshment",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "description": "Automatically refresh tabs on a schedule",
+  "action": {
+    "default_title": "refreshment!"
+  },
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "permissions": [
+    "activeTab", 
+    "scripting",
+    "alarms"
+  ]
+}
