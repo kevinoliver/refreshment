@@ -1,6 +1,6 @@
 'use strict';
 
-const REFRESH_PERIOD_MINUTES = 0.1 // todo: set to 5
+const REFRESH_PERIOD_MINUTES = 5
 const ALARM_NAME_PREFIX = "refresh_tab_id_"
 const BADGE_STATE_ON = "on"
 const BADGE_STATE_OFF = ""
