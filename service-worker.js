@@ -7,13 +7,13 @@ function alarmNameForTabId(tabId) {
 }
 
 async function setBadgeText(tabId, isRefreshing) {
-  // console.log("setting badge text to " + isRefreshing)
   return chrome.action.setBadgeText({
     tabId: tabId,
     text: isRefreshing ? "on" : ""
   });
 }
 
+// Handles turning on/off the refreshing
 chrome.action.onClicked.addListener(async (tab) => {
   // Retrieve the action badge to check the current state of the extension
   const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
@@ -24,7 +24,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   if (isRefreshing) {
     chrome.alarms.create(
       alarmNameForTabId(tab.id),
-      { periodInMinutes: 1 }, // todo: set this to 5 
+      { periodInMinutes: 5 },
     );
   } else {
     chrome.alarms.clear(
@@ -33,6 +33,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
+// Does the refreshing when the alarms fire
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (!alarm.name.startsWith(REFRESH_PREFIX)) {
     return
@@ -42,6 +43,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   chrome.tabs.reload(tabId)
 });
 
+// Keep the extension's badge state up-to-date
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status == 'complete') {
     const alarm = await chrome.alarms.get(alarmNameForTabId(tabId))
