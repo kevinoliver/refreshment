@@ -5,7 +5,7 @@ A Chrome browser extension for automatically refreshing tabs.
 ## Installation
 
 Install locally using [an unpacked extension](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked). 
-Doing so requires cloning this repo and then loading it in Chrome.
+Doing so requires [downloading a release](https://github.com/kevinoliver/refreshment/releases) (or cloning this repo) and then loading it in Chrome.
 
 ## Usage
 
