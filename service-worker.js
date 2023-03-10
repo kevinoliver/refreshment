@@ -56,7 +56,7 @@ async function updateIcon(tabId, isRefreshing) {
     await chrome.action.setTitle({
       tabId: tabId,
       title: isRefreshing 
-        ? `Refreshing this tab every ${REFRESH_PERIOD_MINUTES} minutes. Click to stop refreshing`
+        ? `Refreshing this tab every ${REFRESH_PERIOD_MINUTES} minutes. Click to stop refreshing.`
         : `Click to refresh this tab every ${REFRESH_PERIOD_MINUTES} minutes.` 
     })
   } catch (error) {
